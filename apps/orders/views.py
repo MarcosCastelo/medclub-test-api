@@ -11,11 +11,11 @@ class OrderViewSet(ExceptionHandlerMixin, viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
     
     def perform_create(self, serializer):
-        item_ids = serializer.validated_data.get('items')
-        order = OrderService.create_order(item_ids)
+        order_items_data = serializer.validated_data.pop('order_items')
+        order = OrderService.create_order(order_items_data)
         serializer.instance = order
 
     def perform_update(self, serializer):
-        item_ids = serializer.validated_data.get('items')
-        order = OrderService.update_order(self.get_object(), item_ids)
+        order_items_data =serializer.validated_data.pop('order_items')
+        order = OrderService.update_order(self.get_object(), order_items_data)
         serializer.instance = order
