@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from authentication.models import User
 
-class AuthenticationTests(TestCase):
+class AuthenticationTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
@@ -41,9 +41,10 @@ class AuthenticationTests(TestCase):
 
     def test_add_user_to_group(self):
         user = self.create_user('testuser', 'password', 'testuser@example.com')
+        admin_user = self.create_user('admin_user', 'password', 'admin@example.com', is_admin=True)
         group = self.create_group('testgroup')
         user.groups.add(group)
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(f'/auth/users/{user.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('testgroup', [g['name'] for g in response.data['groups']])

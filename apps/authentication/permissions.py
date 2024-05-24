@@ -23,10 +23,10 @@ class IsOwnerOrAdmin(permissions.BasePermission):
 
 class IsGroupMemberOrOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return obj.user == request.user
         if request.user.is_authenticated:
             user_group_names = [group.name for group in request.user.groups.all()]
             if any(group in user_group_names for group in view.required_groups) or request.user.is_superuser:
                 return True
+        if request.method in permissions.SAFE_METHODS:
+            return obj.user == request.user
         return obj.user == request.user

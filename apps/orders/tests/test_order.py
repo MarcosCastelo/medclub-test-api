@@ -1,12 +1,12 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from apps.authentication.models import User
-from apps.items.models import Item
+from authentication.models import User
+from items.models import Item
 from orders.models import Order, OrderItem
 from django.contrib.auth.models import Group
 
-class OrderTests(TestCase):
+class OrderTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
@@ -23,7 +23,7 @@ class OrderTests(TestCase):
         return group
 
     def create_item(self, name, price):
-        return Item.objects.create(name=name, price=price, description='A sample item.')
+        return Item.objects.create(name=name, price=price)
 
     def test_create_order(self):
         user = self.create_user('normal_user', 'password', 'normal@example.com')
@@ -31,9 +31,9 @@ class OrderTests(TestCase):
         self.client.force_authenticate(user=user)
         response = self.client.post('/orders/', {
             'order_items': [
-                {'item_id': item.id, 'quantity': 2}
+                {'item': item.id, 'quantity': 2}
             ]
-        })
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Order.objects.count(), 1)
         self.assertEqual(OrderItem.objects.count(), 1)
@@ -46,11 +46,11 @@ class OrderTests(TestCase):
         self.client.force_authenticate(user=user)
         response = self.client.get('/orders/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_orders_as_authorized_user(self):
         user = self.create_user('manager_user', 'password', 'manager@example.com')
-        group = self.create_group('order_managers')
+        group = self.create_group('manager')
         user.groups.add(group)
         normal_user = self.create_user('normal_user', 'password', 'normal@example.com')
         item = self.create_item('Item 1', 10.0)
@@ -59,7 +59,7 @@ class OrderTests(TestCase):
         self.client.force_authenticate(user=user)
         response = self.client.get('/orders/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_delete_order_as_admin(self):
         admin_user = self.create_user('admin_user', 'password', 'admin@example.com', is_admin=True)

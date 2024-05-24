@@ -1,11 +1,11 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from apps.authentication.models import User
+from authentication.models import User
 from items.models import Item
 from django.contrib.auth.models import Group
 
-class ItemTests(TestCase):
+class ItemTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
 
@@ -23,13 +23,12 @@ class ItemTests(TestCase):
 
     def test_create_item_as_authorized_user(self):
         user = self.create_user('editor_user', 'password', 'editor@example.com')
-        group = self.create_group('item_editors')
+        group = self.create_group('editors')
         user.groups.add(group)
         self.client.force_authenticate(user=user)
         response = self.client.post('/items/', {
             'name': 'Item 1',
             'price': 10.0,
-            'description': 'A sample item.'
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Item.objects.count(), 1)
@@ -40,13 +39,14 @@ class ItemTests(TestCase):
         response = self.client.post('/items/', {
             'name': 'Item 1',
             'price': 10.0,
-            'description': 'A sample item.'
         })
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_list_items(self):
-        Item.objects.create(name='Item 1', price=10.0, description='A sample item.')
-        Item.objects.create(name='Item 2', price=20.0, description='Another sample item.')
+        normal_user = self.create_user('normal_user', 'password', 'normal@example.com')
+        self.client.force_authenticate(user=normal_user)
+        Item.objects.create(name='Item 1', price=10.0)
+        Item.objects.create(name='Item 2', price=20.0)
         response = self.client.get('/items/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['results']), 2)

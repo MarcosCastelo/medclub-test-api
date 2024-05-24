@@ -3,10 +3,11 @@ from django.db import models
 from items.models import Item
 from django.core.validators import MinValueValidator
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, validators=[MinValueValidator(0.0)])
     
