@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: medclubdb
+      POSTGRES_USER: meduser
+      POSTGRES_PASSWORD: medpass123
+
+  web:
+    build: .
+    command: poetry run python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://meduser:medpass123@db:5432/medclubdb
+      DJANGO_SETTINGS_MODULE: medclub.settings
+
+volumes:
+  postgres_data:
