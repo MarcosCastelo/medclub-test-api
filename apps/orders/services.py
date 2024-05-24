@@ -4,8 +4,8 @@ from django.db import transaction
 class OrderService:
     @staticmethod
     @transaction.atomic
-    def create_order(order_items_data):
-        order = Order.objects.create()
+    def create_order(user, order_items_data):
+        order = Order.objects.create(user=user)
         total_price = 0
         for order_item_data in order_items_data:
             item = order_item_data['item']
