@@ -33,11 +33,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     order_items = OrderItemSerializer(many=True)
+    user = serializers.ReadOnlyField(source='user.username')
     
     class Meta:
         model = Order
-        fields = ['id', 'order_items', 'total_price', 'created_at']
-        read_only_fields = ['created_at', 'total_price']
+        fields = ['id', 'user', 'order_items', 'total_price', 'created_at']
+        read_only_fields = ['user', 'created_at', 'total_price']
         
     def validate_order_items(self, value):
         if not value:
